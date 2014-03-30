@@ -5,7 +5,6 @@ import           Test.Hspec
 
 import           Control.Exception
 import           Control.Concurrent
-import           Network
 import           Network.HTTP.Conduit
 
 import           Reserve
@@ -14,7 +13,7 @@ main :: IO ()
 main = hspec spec
 
 withServer :: IO () -> IO ()
-withServer action = bracket (listenOn $ PortNumber 4040) sClose $ \s -> do
+withServer action = withSession $ \s -> do
   mvar <- newEmptyMVar
   _ <- forkIO (run s `finally` putMVar mvar ())
   action

@@ -1,8 +1,8 @@
 module Main (main) where
 
-import           Control.Exception
+import           Control.Monad
 import           Network
-import qualified Reserve
+import           Reserve
 
 main :: IO ()
-main = withSocketsDo $ bracket (listenOn $ PortNumber 4040) sClose Reserve.run
+main = withSocketsDo $ withSession (forever . run)
