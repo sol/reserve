@@ -34,6 +34,7 @@ run (Session s int) = do
   Interpreter.start int
   getHeader h >>= httpRequest >>= maybe (gatewayTimeout h) (hPutStr h)
   Interpreter.stop int
+  hClose h
   where
     gatewayTimeout h = do
       hPutStr h "HTTP/1.1 504 Gateway Timeout\r\n"
