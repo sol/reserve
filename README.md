@@ -1,6 +1,5 @@
 ## DISCLAIMER
-> This is very early stage software; a proof of concept that is not meant for
-> production use!
+**This is very early stage software; it is a proof of concept that is not meant for production use!**
 
 ### Shortcomings
 
