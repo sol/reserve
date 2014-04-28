@@ -5,8 +5,15 @@ license-file:     LICENSE
 copyright:        (c) 2014 Simon Hengel
 author:           Simon Hengel <sol@typeful.net>
 maintainer:       Simon Hengel <sol@typeful.net>
+synopsis:         Reserve reloads web applications
+description:      Universal and robust reloading for Haskell web applications
+category:         Web
 build-type:       Simple
 cabal-version:    >= 1.8
+
+source-repository head
+  type: git
+  location: https://github.com/sol/reserve
 
 executable reserve
   ghc-options:
