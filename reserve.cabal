@@ -16,7 +16,8 @@ executable reserve
   main-is:
       Main.hs
   build-depends:
-      base    == 4.*
+      base == 4.*
+    , base-compat >= 0.5.0
     , network
     , unix
     , process
@@ -34,7 +35,8 @@ test-suite spec
   main-is:
       Spec.hs
   build-depends:
-      base    == 4.*
+      base == 4.*
+    , base-compat
     , network
     , unix
     , process

@@ -22,14 +22,14 @@ import qualified Interpreter
 
 data Session = Session Socket Interpreter
 
-openSession :: IO Session
-openSession = Session <$> (listenOn $ PortNumber 4040) <*> Interpreter.new
+openSession :: String -> IO Session
+openSession src = Session <$> (listenOn $ PortNumber 4040) <*> Interpreter.new src
 
 closeSession :: Session -> IO ()
 closeSession (Session h i) = sClose h >> Interpreter.terminate i
 
-withSession :: (Session -> IO a) -> IO a
-withSession = bracket openSession closeSession
+withSession :: String -> (Session -> IO a) -> IO a
+withSession src = bracket (openSession src) closeSession
 
 run :: Session -> IO ()
 run (Session s int) = do

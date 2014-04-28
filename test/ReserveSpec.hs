@@ -13,7 +13,7 @@ main :: IO ()
 main = hspec spec
 
 withServer :: IO () -> IO ()
-withServer action = withSession $ \s -> do
+withServer action = withSession "test/resources/hello.hs" $ \s -> do
   mvar <- newEmptyMVar
   _ <- forkIO (run s `finally` putMVar mvar ())
   action
