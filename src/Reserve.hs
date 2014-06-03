@@ -49,7 +49,7 @@ gatewayTimeout send = simpleResponse send gatewayTimeout504 headers "timeout"
     headers = [("Content-Type", "text/plain"), ("Connection", "close")]
 
 httpRequest :: Request BodyReader -> IO (Maybe (Response BodyReader))
-httpRequest request@(Request method _ headers _) = connectRetry 100000 "localhost" 8080 $ \mh -> case mh of
+httpRequest request@(Request method _ headers _) = connectRetry 200000 "localhost" 8080 $ \mh -> case mh of
   Just h -> do
     sendRequest (B.hPutStr h) request{requestHeaders = setConnectionClose headers}
     c <- connectionFromHandle h
