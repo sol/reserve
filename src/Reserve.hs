@@ -4,6 +4,7 @@ module Reserve (run) where
 import           Control.Applicative
 import           Control.Monad
 import           Control.Exception
+import           GHC.IO.Exception
 import           System.IO
 
 import           Data.ByteString (ByteString)
@@ -34,10 +35,13 @@ run src = withSession src $ \(Session s int) -> forever $ do
   Interpreter.reload int
   Interpreter.start int
   c <- connectionFromHandle h
-  let send = B.hPutStr h
+  let send = ignoreResourceVanished . B.hPutStr h
   readRequest c >>= httpRequest >>= maybe (gatewayTimeout send) (sendResponse send)
   Interpreter.stop int
-  hClose h
+  ignoreResourceVanished $ hClose h
+
+ignoreResourceVanished :: IO () -> IO ()
+ignoreResourceVanished action = catchJust (guard . (== ResourceVanished) . ioe_type) action return
 
 gatewayTimeout :: (ByteString -> IO ()) -> IO ()
 gatewayTimeout send = simpleResponse send gatewayTimeout504 headers "timeout"

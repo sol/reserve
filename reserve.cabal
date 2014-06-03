@@ -25,6 +25,7 @@ executable reserve
   build-depends:
       base == 4.*
     , base-compat >= 0.5.0
+    , directory
     , network
     , unix
     , process
@@ -44,6 +45,7 @@ test-suite spec
   build-depends:
       base == 4.*
     , base-compat
+    , directory
     , network
     , unix
     , process
