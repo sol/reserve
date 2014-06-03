@@ -5,6 +5,7 @@ import           Test.Hspec
 
 import           Control.Exception
 import           Control.Concurrent
+import           System.Directory
 import           Network.HTTP.Conduit
 
 import           Reserve
@@ -13,14 +14,24 @@ main :: IO ()
 main = hspec spec
 
 withServer :: IO () -> IO ()
-withServer action = withSession "test/resources/hello.hs" $ \s -> do
+withServer action = do
   mvar <- newEmptyMVar
-  _ <- forkIO (run s `finally` putMVar mvar ())
-  action
+  bracket (runReserve mvar) killThread (const action)
   takeMVar mvar
+  where
+    runReserve mvar = forkIO $ run "test/resources/hello.hs" `finally` putMVar mvar ()
 
 spec :: Spec
 spec = around withServer $ do
   describe "run" $ do
-    it "runs a server app" $ do
+    it "runs app" $ do
       simpleHttp "http://localhost:4040/" `shouldReturn` "hello"
+
+    it "reloads app" $ do
+      simpleHttp "http://localhost:4040/" `shouldReturn` "hello"
+      withModifiedApp $ simpleHttp "http://localhost:4040/" `shouldReturn` "foo"
+  where
+    withModifiedApp = bracket_
+      (renameFile "test/resources/hello.hs" "test/resources/hello.hs.bak")
+      (renameFile "test/resources/hello.hs.bak" "test/resources/hello.hs")
+      . (copyFile "test/resources/hello_mod.hs" "test/resources/hello.hs" >>)

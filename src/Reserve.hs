@@ -1,11 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Reserve (
-  Session
-, withSession
-, run
-) where
+module Reserve (run) where
 
 import           Control.Applicative
+import           Control.Monad
 import           Control.Exception
 import           System.IO
 
@@ -31,8 +28,8 @@ closeSession (Session h i) = sClose h >> Interpreter.terminate i
 withSession :: String -> (Session -> IO a) -> IO a
 withSession src = bracket (openSession src) closeSession
 
-run :: Session -> IO ()
-run (Session s int) = do
+run :: FilePath -> IO ()
+run src = withSession src $ \(Session s int) -> forever $ do
   (h, _, _) <- accept s
   Interpreter.reload int
   Interpreter.start int

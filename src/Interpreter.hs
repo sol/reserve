@@ -16,7 +16,7 @@ import           Control.Concurrent
 
 data Interpreter = Interpreter ProcessHandle Handle
 
-new :: String -> IO Interpreter
+new :: FilePath -> IO Interpreter
 new src = do
   (Just hIn, Nothing, Nothing, processHandle) <- createProcess $ (proc "ghci" ["-v0", src]) {std_in = CreatePipe}
   return (Interpreter processHandle hIn)
