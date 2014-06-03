@@ -7,9 +7,10 @@ module Interpreter (
 , reload
 ) where
 
+import           System.IO
+import           System.Environment
 import           System.Process
 import           System.Process.Internals
-import           System.IO
 import           System.Posix.Signals hiding (signalProcess)
 import qualified System.Posix.Signals as Posix
 import           Control.Concurrent
@@ -18,7 +19,8 @@ data Interpreter = Interpreter ProcessHandle Handle
 
 new :: FilePath -> IO Interpreter
 new src = do
-  (Just hIn, Nothing, Nothing, processHandle) <- createProcess $ (proc "ghci" ["-v0", src]) {std_in = CreatePipe}
+  e <- getEnvironment
+  (Just hIn, Nothing, Nothing, processHandle) <- createProcess $ (proc "ghci" ["-v0", src]) {std_in = CreatePipe, env = Just $ ("RESERVE_APP_PORT", "8080") : e}
   return (Interpreter processHandle hIn)
 
 terminate :: Interpreter -> IO ()
