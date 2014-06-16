@@ -34,9 +34,9 @@ run src = withSession src $ \(Session s int) -> forever $ do
   (h, _, _) <- accept s
   Interpreter.reload int
   Interpreter.start int
-  c <- connectionFromHandle h
+  c <- inputStreamFromHandle h
   let send = ignoreResourceVanished . B.hPutStr h
-  readRequest c >>= httpRequest >>= maybe (gatewayTimeout send) (sendResponse send)
+  readRequest True c >>= httpRequest >>= maybe (gatewayTimeout send) (sendResponse send)
   Interpreter.stop int
   ignoreResourceVanished $ hClose h
 
@@ -52,8 +52,8 @@ httpRequest :: Request BodyReader -> IO (Maybe (Response BodyReader))
 httpRequest request@(Request method _ headers _) = connectRetry 200000 "localhost" 8080 $ \mh -> case mh of
   Just h -> do
     sendRequest (B.hPutStr h) request{requestHeaders = setConnectionClose headers}
-    c <- connectionFromHandle h
-    Just <$> readResponse method c
+    c <- inputStreamFromHandle h
+    Just <$> readResponse True method c
   Nothing -> return Nothing
   where
     setConnectionClose = (("Connection", "close") :) . filter ((/= "Connection") . fst)

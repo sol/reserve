@@ -30,7 +30,7 @@ executable reserve
     , unix
     , process
     , http-types
-    , http-kit
+    , http-kit >= 0.5
     , bytestring
 
 test-suite spec
@@ -56,4 +56,4 @@ test-suite spec
     , hspec >= 1.5
     , QuickCheck
     , http-conduit
-    , warp
+    , warp >= 3
