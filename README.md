@@ -15,7 +15,7 @@ Currently, reserve assumes that your application:
 
 ### Example
 
-```haskell
+~~~ {.haskell}
 -- app.hs
 {-# LANGUAGE OverloadedStrings #-}
 module Main (main) where
@@ -25,11 +25,11 @@ import Network.HTTP.Types
 import Network.Wai.Handler.Warp (run)
 
 app :: Application
-app _ = return $ responseLBS status200 [("Content-Type", "text/plain")] "hello"
+app _ respond = respond $ responseLBS status200 [("Content-Type", "text/plain")] "hello"
 
 main :: IO ()
 main = run 8080 app
-```
+~~~
 
 ```
 $ reserve app.hs
