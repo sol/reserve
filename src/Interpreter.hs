@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Interpreter (
   Interpreter
 , new
@@ -36,6 +37,11 @@ reload :: Interpreter -> IO ()
 reload (Interpreter _ h) = hPutStrLn h ":reload" >> hFlush h
 
 signalProcess :: Signal -> ProcessHandle -> IO ()
-signalProcess signal (ProcessHandle mvar) = withMVar mvar $ \p -> case p of
-  OpenHandle pid -> Posix.signalProcess signal pid
-  _ -> return ()
+#if MIN_VERSION_process(1,2,0)
+signalProcess signal (ProcessHandle mvar _) =
+#else
+signalProcess signal (ProcessHandle mvar) =
+#endif
+  withMVar mvar $ \p -> case p of
+    OpenHandle pid -> Posix.signalProcess signal pid
+    _ -> return ()
