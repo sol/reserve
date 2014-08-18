@@ -3,6 +3,7 @@ module ReserveSpec (main, spec) where
 
 import           Test.Hspec
 
+import qualified Data.ByteString.Lazy.Char8 as L
 import           Control.Exception
 import           Control.Concurrent
 import           System.IO
@@ -32,6 +33,9 @@ spec = around withServer $ do
     it "reloads app" $ do
       simpleHttp "http://localhost:4040/" `shouldReturn` "hello"
       withModifiedApp $ simpleHttp "http://localhost:4040/" `shouldReturn` "foo"
+
+    it "can deal with large response bodies" $ do
+      simpleHttp "http://localhost:4040/large-response" `shouldReturn` (L.take 100000 $ L.cycle "foo bar baz\n")
 
     context "when client closes connection early" $ do
       it "ignores that client" $ do
