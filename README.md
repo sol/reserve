@@ -8,7 +8,7 @@ immediate effect.
 
 ## Requirements
 
-`reserve` can reload arbitrary Haskell web applications.  Then only requirement
+`reserve` can reload arbitrary Haskell web applications.  The only requirement
 is that your application works with `ghci`.
 
 ## Examples
