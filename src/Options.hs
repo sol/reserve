@@ -82,7 +82,8 @@ parseOptions allArgs = case getOpt Permute options args of
         Right x -> Right x {optionsMainIs = fromMaybe (optionsMainIs defaultOptions) $ listToMaybe mainIs, optionsAppArgs = appArgs}
   where
     tryHelp msg = Left (ExitFailure 1, "reserve: " ++ msg ++ "Try `reserve --help' for more information.\n")
-    usage = usageInfo ("Usage: reserve [OPTION]... [MAIN]\n\nOPTIONS") options ++ helpForMain
+    usage = usageInfo ("Usage: reserve [OPTION]... [MAIN] [-- ARG...]\n\nOPTIONS") options ++ helpForMain ++ helpForAppArgs
     helpForMain = "\nThe optional MAIN argument is a path to a module that exports a `main' function.  (default: " ++ optionsMainIs defaultOptions ++ ")\n"
+    helpForAppArgs = "\nAll arguments following the optional `--' are passed to the web application.\n"
 
     (args, appArgs) = drop 1 <$> span (/= "--") allArgs

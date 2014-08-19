@@ -1,37 +1,87 @@
-## [re](https://github.com/sol/reserve#readme)serve
-
+# [re](https://github.com/sol/reserve#readme)serve
 **DISCLAIMER:** This is early stage software.  It is already functional and
 useful, but it still has some rough edges.
 
-### Requirements
+`reserve` provides code reloading for Haskell web applications.  You can run
+you application with `reserve` during development and code changes will take
+immediate effect.
 
-Currently, reserve assumes that your application:
+## Requirements
 
- * works with `ghci`
- * dose not require any command-line arguments
+`reserve` can reload arbitrary Haskell web applications.  Then only requirement
+is that your application works with `ghci`.
 
-(some of those restriction may be lifted in a future version)
+## Examples
 
-### Example
+### Scotty
+
+Create a file `app.hs` with the following content:
 
 ~~~ {.haskell}
--- app.hs
 {-# LANGUAGE OverloadedStrings #-}
-module Main (main) where
-
-import Network.Wai
-import Network.HTTP.Types
-import Network.Wai.Handler.Warp (run)
-
-app :: Application
-app _ respond = respond $ responseLBS status200 [("Content-Type", "text/plain")] "hello"
+import Web.Scotty
 
 main :: IO ()
-main = run 3000 app
+main = scotty 3000 $ do
+  get "/" $ do
+    text "hello"
 ~~~
 
 ```
 $ reserve app.hs
 ```
 
-Make requests to <http://localhost:12000>.
+Make a request to <http://localhost:12000>, modify `app.hs`, reload!
+
+### Snap (sandboxed)
+
+```
+$ mkdir my-project && cd my-project
+$ cabal sandbox init
+$ cabal install snap
+$ cabal exec snap init barebones
+$ cabal exec -- reserve -p 8000
+```
+
+Make a request to <http://localhost:12000>, modify `src/Main.hs`, reload!
+
+## Customization
+
+By default `reserve` assumes that the `Main` module of your application is at
+`src/Main.hs`.  You can customize this by passing the path to your `Main`
+module to `reserve`:
+
+```
+$ reserve src/app.hs
+```
+
+By default `reserve` assumes that your application listens on port `3000`.  You
+can customize this by passing `--port` to `reserve`:
+
+```
+$ reserve --port 8000
+```
+
+By default `reserve` serves your application on port `12000`.  You can
+customize this by passing `--reserve-port` to `reserve`:
+
+```
+$ reserve --reserve-port 12000
+```
+
+You can pass command-line arguments to your application by separating them with
+`--`:
+
+```
+$ reserve src/app.hs -- -p 3000
+```
+
+`reserve` uses `ghci` to run your application.  If your application requires
+any addition GHC options, you can put them into `./.ghci`:
+
+```
+$ echo ":set -isrc" >> .ghci
+$ reserve src/app.hs
+```
+
+`reserve` works with Cabal sandboxes, just run it with `cabal exec -- reserve`.
