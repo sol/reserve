@@ -15,6 +15,7 @@ import           Network.HTTP.Types
 import           Network.HTTP.Toolkit
 
 import           Util
+import           Options
 import           Interpreter (Interpreter)
 import qualified Interpreter
 
@@ -29,15 +30,15 @@ closeSession (Session h i) = sClose h >> Interpreter.terminate i
 withSession :: String -> (Session -> IO a) -> IO a
 withSession src = bracket (openSession src) closeSession
 
-run :: FilePath -> IO ()
-run src = withSession src $ \(Session s int) -> forever $ do
+run :: Options -> IO ()
+run opts = withSession (optionsMainIs opts) $ \(Session s int) -> forever $ do
   (h, _, _) <- accept s
   Interpreter.reload int
   Interpreter.start int
   c <- inputStreamFromHandle h
   let send :: ByteString -> IO ()
       send = ignoreResourceVanished . B.hPutStr h
-  readRequest True c >>= (`httpRequest` send)
+  readRequest True c >>= httpRequest (optionsPort opts) send
   Interpreter.stop int
   ignoreResourceVanished $ hClose h
 
@@ -49,8 +50,8 @@ gatewayTimeout send = simpleResponse send gatewayTimeout504 headers "timeout"
   where
     headers = [("Content-Type", "text/plain"), ("Connection", "close")]
 
-httpRequest :: Request BodyReader -> (ByteString -> IO ()) -> IO ()
-httpRequest request@(Request method _ headers _) send = connectRetry 200000 "localhost" 8080 $ \mh -> case mh of
+httpRequest :: PortNumber -> (ByteString -> IO ()) -> Request BodyReader -> IO ()
+httpRequest port send request@(Request method _ headers _) = connectRetry 200000 "localhost" port $ \mh -> case mh of
   Just h -> do
     sendRequest (B.hPutStr h) request{requestHeaders = setConnectionClose headers}
     inputStreamFromHandle h >>= readResponse True method >>= sendResponse send

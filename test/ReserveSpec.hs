@@ -11,6 +11,7 @@ import           System.Directory
 import           Network
 import           Network.HTTP.Conduit
 
+import           Options
 import           Reserve
 
 main :: IO ()
@@ -22,7 +23,7 @@ withServer action = do
   bracket (runReserve mvar) killThread (const $ yield >> action)
   takeMVar mvar
   where
-    runReserve mvar = forkIO $ run "test/resources/hello.hs" `finally` putMVar mvar ()
+    runReserve mvar = forkIO $ run defaultOptions {optionsMainIs = "test/resources/hello.hs"} `finally` putMVar mvar ()
 
 spec :: Spec
 spec = around withServer $ do

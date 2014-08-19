@@ -7,7 +7,6 @@ useful, but it still has some rough edges.
 
 Currently, reserve assumes that your application:
 
- * listens on port `8080`
  * works with `ghci`
  * dose not require any command-line arguments
 
@@ -28,7 +27,7 @@ app :: Application
 app _ respond = respond $ responseLBS status200 [("Content-Type", "text/plain")] "hello"
 
 main :: IO ()
-main = run 8080 app
+main = run 3000 app
 ~~~
 
 ```

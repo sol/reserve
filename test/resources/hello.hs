@@ -12,4 +12,4 @@ app request respond = respond . responseLBS status200 [("Content-Type", "text/pl
   _ -> "hello"
 
 main :: IO ()
-main = run 8080 app
+main = run 3000 app

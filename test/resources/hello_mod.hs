@@ -9,4 +9,4 @@ app :: Application
 app _ = ($ responseLBS status200 [("Content-Type", "text/plain")] "foo")
 
 main :: IO ()
-main = run 8080 app
+main = run 3000 app
