@@ -29,21 +29,21 @@ spec :: Spec
 spec = around withServer $ do
   describe "run" $ do
     it "runs app" $ do
-      simpleHttp "http://localhost:4040/" `shouldReturn` "hello"
+      simpleHttp "http://localhost:12000/" `shouldReturn` "hello"
 
     it "reloads app" $ do
-      simpleHttp "http://localhost:4040/" `shouldReturn` "hello"
-      withModifiedApp $ simpleHttp "http://localhost:4040/" `shouldReturn` "foo"
+      simpleHttp "http://localhost:12000/" `shouldReturn` "hello"
+      withModifiedApp $ simpleHttp "http://localhost:12000/" `shouldReturn` "foo"
 
     it "can deal with large response bodies" $ do
-      simpleHttp "http://localhost:4040/large-response" `shouldReturn` (L.take 100000 $ L.cycle "foo bar baz\n")
+      simpleHttp "http://localhost:12000/large-response" `shouldReturn` (L.take 100000 $ L.cycle "foo bar baz\n")
 
     context "when client closes connection early" $ do
       it "ignores that client" $ do
-        h <- connectTo "localhost" (PortNumber 4040)
+        h <- connectTo "localhost" (PortNumber 12000)
         hPutStr h "GET / HTTP/1.1\r\n\r\n"
         hClose h
-        simpleHttp "http://localhost:4040/" `shouldReturn` "hello"
+        simpleHttp "http://localhost:12000/" `shouldReturn` "hello"
   where
     withModifiedApp = bracket_
       (renameFile "test/resources/hello.hs" "test/resources/hello.hs.bak")

@@ -21,17 +21,18 @@ import qualified Interpreter
 
 data Session = Session Socket Interpreter
 
-openSession :: String -> IO Session
-openSession src = Session <$> (listenOn $ PortNumber 4040) <*> Interpreter.new src
+openSession :: Options -> IO Session
+-- openSession opts = Session <$> listenOn (optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
+openSession opts = Session <$> listenOn (PortNumber $ optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
 
 closeSession :: Session -> IO ()
 closeSession (Session h i) = sClose h >> Interpreter.terminate i
 
-withSession :: String -> (Session -> IO a) -> IO a
-withSession src = bracket (openSession src) closeSession
+withSession :: Options -> (Session -> IO a) -> IO a
+withSession opts = bracket (openSession opts) closeSession
 
 run :: Options -> IO ()
-run opts = withSession (optionsMainIs opts) $ \(Session s int) -> forever $ do
+run opts = withSession opts $ \(Session s int) -> forever $ do
   (h, _, _) <- accept s
   Interpreter.reload int
   Interpreter.start int

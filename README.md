@@ -34,4 +34,4 @@ main = run 3000 app
 $ reserve app.hs
 ```
 
-Make requests to <http://localhost:4040>.
+Make requests to <http://localhost:12000>.

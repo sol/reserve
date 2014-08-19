@@ -32,14 +32,18 @@ exitWithMessage err msg = case err of
 
 data Options = Options {
   optionsPort :: PortNumber
+, optionsReservePort :: PortNumber
 , optionsMainIs :: FilePath
 } deriving (Eq, Show)
 
 setPort :: Integer -> Options -> Options
 setPort p c = c {optionsPort = fromInteger p}
 
+setReservePort :: Integer -> Options -> Options
+setReservePort p c = c {optionsReservePort = fromInteger p}
+
 defaultOptions :: Options
-defaultOptions = Options 3000 "src/Main.hs"
+defaultOptions = Options 3000 12000 "src/Main.hs"
 
 type Result = Either NoOptions Options
 
@@ -61,8 +65,9 @@ mkOption shortcut name (Arg argName parser setter) help = Option shortcut [name]
 
 options :: [OptDescr (Result -> Result)]
 options = [
-    Option   []  ["help"]             (NoArg (const $ Left Help))         "display this help and exit"
-  , mkOption "p"  "port"              (Arg "PORT" readMaybe setPort)      "only run examples that match given PATTERN"
+    Option   []  ["help"]             (NoArg (const $ Left Help))            "display this help and exit"
+  , mkOption "p"  "port"              (Arg "PORT" readMaybe setPort)        ("port of the web application (default: " ++ show (optionsPort defaultOptions) ++ ")")
+  , mkOption ""   "reserve-port"      (Arg "PORT" readMaybe setReservePort) ("port reserve listens on (default: " ++ show (optionsReservePort defaultOptions) ++ ")")
   ]
 
 parseOptions :: [String] -> Either (ExitCode, String) Options
@@ -76,4 +81,4 @@ parseOptions args = case getOpt Permute options args of
   where
     tryHelp msg = Left (ExitFailure 1, "reserve: " ++ msg ++ "Try `reserve --help' for more information.\n")
     usage = usageInfo ("Usage: reserve [OPTION]... [MAIN]\n\nOPTIONS") options ++ helpForMain
-    helpForMain = "\nThe optional MAIN argument is a path to a module that exports a `main' function.\n(default: " ++ optionsMainIs defaultOptions ++ ")\n"
+    helpForMain = "\nThe optional MAIN argument is a path to a module that exports a `main' function.  (default: " ++ optionsMainIs defaultOptions ++ ")\n"
