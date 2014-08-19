@@ -35,7 +35,7 @@ run :: Options -> IO ()
 run opts = withSession opts $ \(Session s int) -> forever $ do
   (h, _, _) <- accept s
   Interpreter.reload int
-  Interpreter.start int
+  Interpreter.start int (optionsAppArgs opts)
   c <- inputStreamFromHandle h
   let send :: ByteString -> IO ()
       send = ignoreResourceVanished . B.hPutStr h

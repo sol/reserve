@@ -8,6 +8,7 @@ module Options (
 , Arg (..)
 ) where
 
+import           Control.Applicative
 import           Data.Maybe
 import           Data.List
 import           Text.Read.Compat
@@ -34,6 +35,7 @@ data Options = Options {
   optionsPort :: PortNumber
 , optionsReservePort :: PortNumber
 , optionsMainIs :: FilePath
+, optionsAppArgs :: [String]
 } deriving (Eq, Show)
 
 setPort :: Integer -> Options -> Options
@@ -43,7 +45,7 @@ setReservePort :: Integer -> Options -> Options
 setReservePort p c = c {optionsReservePort = fromInteger p}
 
 defaultOptions :: Options
-defaultOptions = Options 3000 12000 "src/Main.hs"
+defaultOptions = Options 3000 12000 "src/Main.hs" []
 
 type Result = Either NoOptions Options
 
@@ -71,14 +73,16 @@ options = [
   ]
 
 parseOptions :: [String] -> Either (ExitCode, String) Options
-parseOptions args = case getOpt Permute options args of
+parseOptions allArgs = case getOpt Permute options args of
     (_, _, err:_)  -> tryHelp err
     (_, _:arg:_, _)  -> tryHelp ("unexpected argument `" ++ arg ++ "'\n")
     (opts, mainIs, []) -> case foldl' (flip id) (Right defaultOptions) opts of
         Left Help                         -> Left (ExitSuccess, usage)
         Left (InvalidArgument flag value) -> tryHelp ("invalid argument `" ++ value ++ "' for `--" ++ flag ++ "'\n")
-        Right x -> Right x {optionsMainIs = fromMaybe (optionsMainIs defaultOptions) $ listToMaybe mainIs}
+        Right x -> Right x {optionsMainIs = fromMaybe (optionsMainIs defaultOptions) $ listToMaybe mainIs, optionsAppArgs = appArgs}
   where
     tryHelp msg = Left (ExitFailure 1, "reserve: " ++ msg ++ "Try `reserve --help' for more information.\n")
     usage = usageInfo ("Usage: reserve [OPTION]... [MAIN]\n\nOPTIONS") options ++ helpForMain
     helpForMain = "\nThe optional MAIN argument is a path to a module that exports a `main' function.  (default: " ++ optionsMainIs defaultOptions ++ ")\n"
+
+    (args, appArgs) = drop 1 <$> span (/= "--") allArgs

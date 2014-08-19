@@ -25,8 +25,8 @@ new src = do
 terminate :: Interpreter -> IO ()
 terminate i@(Interpreter p h) = stop i >> hClose h >> waitForProcess p >> return ()
 
-start :: Interpreter -> IO ()
-start (Interpreter _ h) = hPutStrLn h ":main" >> hFlush h
+start :: Interpreter -> [String] -> IO ()
+start (Interpreter _ h) args = hPutStrLn h (unwords $ ":main" : args) >> hFlush h
 
 stop :: Interpreter -> IO ()
 stop (Interpreter p _) = signalProcess sigINT p
