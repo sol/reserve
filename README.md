@@ -66,14 +66,14 @@ By default `reserve` serves your application on port `12000`.  You can
 customize this by passing `--reserve-port` to `reserve`:
 
 ```
-$ reserve --reserve-port 12000
+$ reserve --reserve-port 4040
 ```
 
 You can pass command-line arguments to your application by separating them with
 `--`:
 
 ```
-$ reserve src/app.hs -- -p 3000
+$ reserve src/app.hs -- --mode development
 ```
 
 `reserve` uses `ghci` to run your application.  If your application requires
