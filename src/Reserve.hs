@@ -18,6 +18,7 @@ import           Util
 import           Options
 import           Interpreter (Interpreter)
 import qualified Interpreter
+import           Data.IORef
 
 data Session = Session Socket Interpreter
 
@@ -32,16 +33,23 @@ withSession :: Options -> (Session -> IO a) -> IO a
 withSession opts = bracket (openSession opts) closeSession
 
 run :: Options -> IO ()
-run opts = withSession opts $ \(Session s interpreter) -> forever $ do
-  (h, _, _) <- accept s
-  Interpreter.reload interpreter
-  Interpreter.start interpreter (optionsAppArgs opts)
-  c <- inputStreamFromHandle h
-  let send :: ByteString -> IO ()
-      send = ignoreResourceVanished . B.hPutStr h
-  readRequest True c >>= httpRequest (optionsPort opts) send
-  Interpreter.stop interpreter
-  ignoreResourceVanished $ hClose h
+run opts = withSession opts $ \(Session s int) -> do
+  Interpreter.start int (optionsAppArgs opts)
+  ref <- getModTime >>= newIORef
+  forever $ do
+    (h, _, _) <- accept s
+    t0 <- readIORef ref
+    t1 <- getModTime
+    when (t0 < t1) $ do
+      Interpreter.stop int
+      Interpreter.reload int
+      Interpreter.start int (optionsAppArgs opts)
+      writeIORef ref t1
+    c <- inputStreamFromHandle h
+    let send :: ByteString -> IO ()
+        send = ignoreResourceVanished . B.hPutStr h
+    readRequest True c >>= httpRequest (optionsPort opts) send
+    ignoreResourceVanished $ hClose h
 
 ignoreResourceVanished :: IO () -> IO ()
 ignoreResourceVanished action = catchJust (guard . (== ResourceVanished) . ioe_type) action return

@@ -37,6 +37,9 @@ executable reserve
     , http-types
     , http-kit >= 0.5
     , bytestring
+    , filepath
+    , directory
+    , time
 
 test-suite spec
   type:
@@ -57,6 +60,9 @@ test-suite spec
     , http-types
     , http-kit
     , bytestring
+    , filepath
+    , directory
+    , time
 
     , hspec >= 1.5
     , QuickCheck
