@@ -32,15 +32,15 @@ withSession :: Options -> (Session -> IO a) -> IO a
 withSession opts = bracket (openSession opts) closeSession
 
 run :: Options -> IO ()
-run opts = withSession opts $ \(Session s int) -> forever $ do
+run opts = withSession opts $ \(Session s interpreter) -> forever $ do
   (h, _, _) <- accept s
-  Interpreter.reload int
-  Interpreter.start int (optionsAppArgs opts)
+  Interpreter.reload interpreter
+  Interpreter.start interpreter (optionsAppArgs opts)
   c <- inputStreamFromHandle h
   let send :: ByteString -> IO ()
       send = ignoreResourceVanished . B.hPutStr h
   readRequest True c >>= httpRequest (optionsPort opts) send
-  Interpreter.stop int
+  Interpreter.stop interpreter
   ignoreResourceVanished $ hClose h
 
 ignoreResourceVanished :: IO () -> IO ()
