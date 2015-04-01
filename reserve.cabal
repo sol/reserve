@@ -58,7 +58,7 @@ test-suite spec
     , http-kit
     , bytestring
 
-    , hspec >= 1.5
+    , hspec >= 2
     , QuickCheck
     , http-conduit
     , warp >= 3

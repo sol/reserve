@@ -26,7 +26,7 @@ withServer action = do
     runReserve mvar = forkIO $ run defaultOptions {optionsMainIs = "test/resources/hello.hs"} `finally` putMVar mvar ()
 
 spec :: Spec
-spec = around withServer $ do
+spec = around_ withServer $ do
   describe "run" $ do
     it "runs app" $ do
       simpleHttp "http://localhost:12000/" `shouldReturn` "hello"
