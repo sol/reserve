@@ -1,7 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Reserve (run) where
 
-import           Control.Applicative
+import           Prelude.Compat
+
 import           Control.Monad
 import           Control.Exception
 import           GHC.IO.Exception

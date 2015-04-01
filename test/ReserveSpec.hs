@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 module ReserveSpec (main, spec) where
 
+import           Prelude.Compat
+
 import           Test.Hspec
 
 import qualified Data.ByteString.Lazy.Char8 as L

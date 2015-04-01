@@ -8,6 +8,8 @@ module Interpreter (
 , reload
 ) where
 
+import           Prelude.Compat
+
 import           System.Process
 import           System.Process.Internals
 import           System.IO

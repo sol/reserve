@@ -9,7 +9,7 @@ synopsis:         Reserve reloads web applications
 description:      Universal and robust reloading for Haskell web applications
 category:         Web
 build-type:       Simple
-cabal-version:    >= 1.8
+cabal-version:    >= 1.10
 
 source-repository head
   type: git
@@ -29,7 +29,7 @@ executable reserve
       Util
   build-depends:
       base == 4.*
-    , base-compat >= 0.5.0
+    , base-compat >= 0.6.0
     , directory
     , network
     , unix
@@ -37,6 +37,8 @@ executable reserve
     , http-types
     , http-kit >= 0.5
     , bytestring
+  default-extensions: NoImplicitPrelude
+  default-language: Haskell2010
 
 test-suite spec
   type:
@@ -62,3 +64,5 @@ test-suite spec
     , QuickCheck
     , http-conduit
     , warp >= 3
+  default-extensions: NoImplicitPrelude
+  default-language: Haskell2010

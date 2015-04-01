@@ -1,6 +1,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 module Util where
 
+import           Prelude.Compat
+
 import           Control.Concurrent
 import           Control.Exception
 import           System.IO

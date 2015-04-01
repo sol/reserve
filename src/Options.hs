@@ -8,7 +8,8 @@ module Options (
 , Arg (..)
 ) where
 
-import           Control.Applicative
+import           Prelude.Compat
+
 import           Data.Maybe
 import           Data.List
 import           Text.Read.Compat
