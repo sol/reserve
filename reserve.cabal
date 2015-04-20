@@ -38,6 +38,7 @@ executable reserve
     , http-types
     , http-kit >= 0.5
     , bytestring
+    , temporary
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall
   default-language: Haskell2010
@@ -47,6 +48,7 @@ test-suite spec
   hs-source-dirs: test, src
   main-is: Spec.hs
   other-modules:
+      Helper
       OptionsSpec
       ReserveSpec
       UtilSpec
@@ -64,11 +66,13 @@ test-suite spec
     , http-types
     , http-kit >= 0.5
     , bytestring
+    , temporary
 
     , hspec >= 2
     , QuickCheck
     , http-conduit
     , warp >= 3
+    , interpolate
   default-extensions: NoImplicitPrelude
   ghc-options: -Wall
   default-language: Haskell2010

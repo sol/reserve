@@ -23,6 +23,7 @@ dependencies:
   - http-types
   - http-kit >= 0.5
   - bytestring
+  - temporary
 
 executables:
   reserve:
@@ -42,3 +43,4 @@ tests:
       - QuickCheck
       - http-conduit
       - warp >= 3
+      - interpolate
