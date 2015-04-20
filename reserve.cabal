@@ -1,3 +1,7 @@
+-- This file has been generated from package.yaml by hpack.
+--
+-- see: https://github.com/sol/hpack
+
 name:             reserve
 version:          0.1.1
 bug-reports:      https://github.com/sol/reserve/issues

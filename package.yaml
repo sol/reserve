@@ -1,0 +1,44 @@
+version: 0.1.1
+license: MIT
+category: Web
+copyright:  (c) 2014, 2015 Simon Hengel
+author:     Simon Hengel <sol@typeful.net>
+maintainer: Simon Hengel <sol@typeful.net>
+synopsis:   Reserve reloads web applications
+description: Universal and robust reloading for Haskell web applications
+
+github: sol/reserve
+
+ghc-options: -Wall
+
+default-extensions: NoImplicitPrelude
+
+dependencies:
+  - base == 4.*
+  - base-compat >= 0.6.0
+  - directory
+  - network
+  - unix
+  - process
+  - http-types
+  - http-kit >= 0.5
+  - bytestring
+
+executables:
+  reserve:
+    main: Main.hs
+    source-dirs:
+      - driver
+      - src
+
+tests:
+  spec:
+    main: Spec.hs
+    source-dirs:
+      - test
+      - src
+    dependencies:
+      - hspec >= 2
+      - QuickCheck
+      - http-conduit
+      - warp >= 3
