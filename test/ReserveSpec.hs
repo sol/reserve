@@ -12,25 +12,26 @@ import           System.IO
 import           Network
 import           Network.HTTP.Conduit
 import           Data.String.Interpolate
+import           Data.String.Interpolate.Util
 
 import           Options
 import           Reserve
 
 appWithResponse :: String -> IO ()
-appWithResponse response = writeFile "app.hs" [i|
-{-# LANGUAGE OverloadedStrings #-}
-module Main (main) where
+appWithResponse response = writeFile "app.hs" $ unindent [i|
+  {-# LANGUAGE OverloadedStrings #-}
+  module Main (main) where
 
-import Network.Wai
-import Network.HTTP.Types
-import Network.Wai.Handler.Warp (run)
-import qualified Data.ByteString.Lazy.Char8 as B
+  import Network.Wai
+  import Network.HTTP.Types
+  import Network.Wai.Handler.Warp (run)
+  import qualified Data.ByteString.Lazy.Char8 as B
 
-app :: Application
-app _ = ($ responseLBS status200 [("Content-Type", "text/plain")] #{response})
+  app :: Application
+  app _ = ($ responseLBS status200 [("Content-Type", "text/plain")] #{response})
 
-main :: IO ()
-main = run 3000 app
+  main :: IO ()
+  main = run 3000 app
 |]
 
 literal :: String -> String
