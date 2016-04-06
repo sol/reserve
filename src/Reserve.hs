@@ -23,7 +23,6 @@ import qualified Interpreter
 data Session = Session Socket Interpreter
 
 openSession :: Options -> IO Session
--- openSession opts = Session <$> listenOn (optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
 openSession opts = Session <$> listenOn (PortNumber $ optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
 
 closeSession :: Session -> IO ()
