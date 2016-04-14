@@ -1,7 +1,7 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Interpreter (
-  Interpreter
-, InterpreterM
+  InterpreterM
 , withInterpreter
 , start
 , stop
@@ -28,27 +28,31 @@ new src = do
   return (Interpreter processHandle hIn)
 
 terminate :: Interpreter -> IO ()
-terminate i@(Interpreter p h) = runReaderT stop i >> hClose h >> waitForProcess p >> return ()
+terminate i@(Interpreter p h) = runInterpreterM stop i >> hClose h >> waitForProcess p >> return ()
 
-type InterpreterM = ReaderT Interpreter IO
+newtype InterpreterM a = InterpreterM (ReaderT Interpreter IO a)
+  deriving (Functor, Applicative, Monad, MonadIO)
+
+runInterpreterM :: InterpreterM a -> Interpreter -> IO a
+runInterpreterM (InterpreterM action) = runReaderT action
 
 withInterpreter :: FilePath -> InterpreterM a -> IO a
 withInterpreter src action = bracket (new src) terminate $ \ interpreter ->
-  runReaderT action interpreter
+  runInterpreterM action interpreter
 
 start :: [String] -> InterpreterM ()
 start args = do
-  Interpreter _ h <- ask
+  Interpreter _ h <- InterpreterM ask
   liftIO $ hPutStrLn h (unwords $ ":main" : args) >> hFlush h
 
 stop :: InterpreterM ()
 stop = do
-  Interpreter p _ <- ask
+  Interpreter p _ <- InterpreterM ask
   liftIO $ signalProcess sigINT p
 
 reload :: InterpreterM ()
 reload = do
-  Interpreter _ h <- ask
+  Interpreter _ h <- InterpreterM ask
   liftIO $ hPutStrLn h ":reload" >> hFlush h
 
 signalProcess :: Signal -> ProcessHandle -> IO ()
