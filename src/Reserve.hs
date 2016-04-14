@@ -17,36 +17,36 @@ import           Network
 import           Network.HTTP.Toolkit
 import           Network.HTTP.Types
 
-import qualified Interpreter
-import           Interpreter (Interpreter)
+import           Interpreter
 import           Options
 import           Util
 
-data Session = Session Socket Interpreter
+data Session = Session Socket
 
-openSession :: Interpreter -> Options -> IO Session
-openSession interpreter opts = Session <$> listenOn (PortNumber $ optionsReservePort opts) <*> pure interpreter
+openSession :: Options -> IO Session
+openSession opts = Session <$> listenOn (PortNumber $ optionsReservePort opts)
 
 closeSession :: Session -> IO ()
-closeSession (Session h _i) = sClose h
+closeSession (Session h) = sClose h
 
-withSession :: Options -> (Session -> IO a) -> IO a
+withSession :: Options -> (Session -> Interpreter.InterpreterM a) -> IO a
 withSession opts action =
   Interpreter.withInterpreter (optionsMainIs opts) $ do
     interpreter <- ask
-    liftIO $ bracket (openSession interpreter opts) closeSession action
+    liftIO $ bracket (openSession opts) closeSession
+      (\ session -> runReaderT (action session) interpreter)
 
 run :: Options -> IO ()
-run opts = withSession opts $ \(Session s interpreter) -> forever $ do
-  (h, _, _) <- accept s
-  Interpreter.reload interpreter
-  Interpreter.start interpreter (optionsAppArgs opts)
-  c <- inputStreamFromHandle h
+run opts = withSession opts $ \(Session s) -> forever $ do
+  (h, _, _) <- liftIO $ accept s
+  Interpreter.reload
+  Interpreter.start (optionsAppArgs opts)
+  c <- liftIO $ inputStreamFromHandle h
   let send :: ByteString -> IO ()
       send = ignoreResourceVanished . B.hPutStr h
-  readRequest True c >>= httpRequest (optionsPort opts) send
-  Interpreter.stop interpreter
-  ignoreResourceVanished $ hClose h
+  liftIO $ readRequest True c >>= httpRequest (optionsPort opts) send
+  Interpreter.stop
+  liftIO $ ignoreResourceVanished $ hClose h
 
 ignoreResourceVanished :: IO () -> IO ()
 ignoreResourceVanished action = catchJust (guard . (== ResourceVanished) . ioe_type) action return

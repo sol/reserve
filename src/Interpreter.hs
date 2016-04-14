@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 module Interpreter (
   Interpreter
+, InterpreterM
 , withInterpreter
 , start
 , stop
@@ -11,6 +12,7 @@ import           Prelude.Compat
 
 import           Control.Concurrent
 import           Control.Exception
+import           Control.Monad.IO.Class
 import           Control.Monad.Trans.Reader
 import           System.IO
 import qualified System.Posix.Signals as Posix
@@ -26,7 +28,7 @@ new src = do
   return (Interpreter processHandle hIn)
 
 terminate :: Interpreter -> IO ()
-terminate i@(Interpreter p h) = stop i >> hClose h >> waitForProcess p >> return ()
+terminate i@(Interpreter p h) = runReaderT stop i >> hClose h >> waitForProcess p >> return ()
 
 type InterpreterM = ReaderT Interpreter IO
 
@@ -34,14 +36,20 @@ withInterpreter :: FilePath -> InterpreterM a -> IO a
 withInterpreter src action = bracket (new src) terminate $ \ interpreter ->
   runReaderT action interpreter
 
-start :: Interpreter -> [String] -> IO ()
-start (Interpreter _ h) args = hPutStrLn h (unwords $ ":main" : args) >> hFlush h
+start :: [String] -> InterpreterM ()
+start args = do
+  Interpreter _ h <- ask
+  liftIO $ hPutStrLn h (unwords $ ":main" : args) >> hFlush h
 
-stop :: Interpreter -> IO ()
-stop (Interpreter p _) = signalProcess sigINT p
+stop :: InterpreterM ()
+stop = do
+  Interpreter p _ <- ask
+  liftIO $ signalProcess sigINT p
 
-reload :: Interpreter -> IO ()
-reload (Interpreter _ h) = hPutStrLn h ":reload" >> hFlush h
+reload :: InterpreterM ()
+reload = do
+  Interpreter _ h <- ask
+  liftIO $ hPutStrLn h ":reload" >> hFlush h
 
 signalProcess :: Signal -> ProcessHandle -> IO ()
 #if MIN_VERSION_process(1,2,0)
