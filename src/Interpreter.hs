@@ -1,8 +1,7 @@
 {-# LANGUAGE CPP #-}
 module Interpreter (
   Interpreter
-, new
-, terminate
+, withInterpreter
 , start
 , stop
 , reload
@@ -10,12 +9,13 @@ module Interpreter (
 
 import           Prelude.Compat
 
+import           Control.Concurrent
+import           Control.Exception
+import           System.IO
+import qualified System.Posix.Signals as Posix
+import           System.Posix.Signals hiding (signalProcess)
 import           System.Process
 import           System.Process.Internals
-import           System.IO
-import           System.Posix.Signals hiding (signalProcess)
-import qualified System.Posix.Signals as Posix
-import           Control.Concurrent
 
 data Interpreter = Interpreter ProcessHandle Handle
 
@@ -26,6 +26,9 @@ new src = do
 
 terminate :: Interpreter -> IO ()
 terminate i@(Interpreter p h) = stop i >> hClose h >> waitForProcess p >> return ()
+
+withInterpreter :: FilePath -> (Interpreter -> IO a) -> IO a
+withInterpreter src = bracket (new src) terminate
 
 start :: Interpreter -> [String] -> IO ()
 start (Interpreter _ h) args = hPutStrLn h (unwords $ ":main" : args) >> hFlush h

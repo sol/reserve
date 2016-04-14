@@ -22,15 +22,16 @@ import qualified Interpreter
 
 data Session = Session Socket Interpreter
 
-openSession :: Options -> IO Session
--- openSession opts = Session <$> listenOn (optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
-openSession opts = Session <$> listenOn (PortNumber $ optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
+openSession :: Interpreter -> Options -> IO Session
+openSession interpreter opts = Session <$> listenOn (PortNumber $ optionsReservePort opts) <*> pure interpreter
 
 closeSession :: Session -> IO ()
-closeSession (Session h i) = sClose h >> Interpreter.terminate i
+closeSession (Session h _i) = sClose h
 
 withSession :: Options -> (Session -> IO a) -> IO a
-withSession opts = bracket (openSession opts) closeSession
+withSession opts action =
+  Interpreter.withInterpreter (optionsMainIs opts) $ \ interpreter ->
+  bracket (openSession interpreter opts) closeSession action
 
 run :: Options -> IO ()
 run opts = withSession opts $ \(Session s interpreter) -> forever $ do
