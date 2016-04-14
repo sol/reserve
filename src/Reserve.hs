@@ -6,7 +6,6 @@ import           Prelude.Compat
 import           Control.Exception
 import           Control.Monad
 import           Control.Monad.IO.Class
-import           Control.Monad.Trans.Reader
 import           GHC.IO.Exception
 import           System.IO
 
@@ -31,10 +30,9 @@ closeSession (Session h) = sClose h
 
 withSession :: Options -> (Session -> Interpreter.InterpreterM a) -> IO a
 withSession opts action =
-  Interpreter.withInterpreter (optionsMainIs opts) $ do
-    interpreter <- ask
-    liftIO $ bracket (openSession opts) closeSession
-      (\ session -> runReaderT (action session) interpreter)
+  bracket (openSession opts) closeSession $ \ session ->
+    withInterpreter (optionsMainIs opts) $
+      action session
 
 run :: Options -> IO ()
 run opts = withSession opts $ \(Session s) -> forever $ do
