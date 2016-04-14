@@ -3,8 +3,10 @@ module Reserve (run) where
 
 import           Prelude.Compat
 
-import           Control.Monad
 import           Control.Exception
+import           Control.Monad
+import           Control.Monad.IO.Class
+import           Control.Monad.Trans.Reader
 import           GHC.IO.Exception
 import           System.IO
 
@@ -12,13 +14,13 @@ import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import           Network
 
-import           Network.HTTP.Types
 import           Network.HTTP.Toolkit
+import           Network.HTTP.Types
 
-import           Util
-import           Options
-import           Interpreter (Interpreter)
 import qualified Interpreter
+import           Interpreter (Interpreter)
+import           Options
+import           Util
 
 data Session = Session Socket Interpreter
 
@@ -30,8 +32,9 @@ closeSession (Session h _i) = sClose h
 
 withSession :: Options -> (Session -> IO a) -> IO a
 withSession opts action =
-  Interpreter.withInterpreter (optionsMainIs opts) $ \ interpreter ->
-  bracket (openSession interpreter opts) closeSession action
+  Interpreter.withInterpreter (optionsMainIs opts) $ do
+    interpreter <- ask
+    liftIO $ bracket (openSession interpreter opts) closeSession action
 
 run :: Options -> IO ()
 run opts = withSession opts $ \(Session s interpreter) -> forever $ do

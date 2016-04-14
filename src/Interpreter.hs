@@ -11,6 +11,7 @@ import           Prelude.Compat
 
 import           Control.Concurrent
 import           Control.Exception
+import           Control.Monad.Trans.Reader
 import           System.IO
 import qualified System.Posix.Signals as Posix
 import           System.Posix.Signals hiding (signalProcess)
@@ -27,8 +28,11 @@ new src = do
 terminate :: Interpreter -> IO ()
 terminate i@(Interpreter p h) = stop i >> hClose h >> waitForProcess p >> return ()
 
-withInterpreter :: FilePath -> (Interpreter -> IO a) -> IO a
-withInterpreter src = bracket (new src) terminate
+type InterpreterM = ReaderT Interpreter IO
+
+withInterpreter :: FilePath -> InterpreterM a -> IO a
+withInterpreter src action = bracket (new src) terminate $ \ interpreter ->
+  runReaderT action interpreter
 
 start :: Interpreter -> [String] -> IO ()
 start (Interpreter _ h) args = hPutStrLn h (unwords $ ":main" : args) >> hFlush h

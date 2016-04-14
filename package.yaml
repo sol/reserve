@@ -23,6 +23,7 @@ dependencies:
   - http-types
   - http-kit >= 0.5
   - bytestring
+  - transformers
 
 executables:
   reserve:
