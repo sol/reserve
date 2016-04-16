@@ -31,14 +31,13 @@ executable reserve
   build-depends:
       base == 4.*
     , base-compat >= 0.6.0
-    , directory
     , network
-    , unix
-    , process
     , http-types
     , http-kit >= 0.5
     , bytestring
     , transformers
+    , mtl
+    , hint
   other-modules:
       Interpreter
       Options
@@ -57,14 +56,13 @@ test-suite spec
   build-depends:
       base == 4.*
     , base-compat >= 0.6.0
-    , directory
     , network
-    , unix
-    , process
     , http-types
     , http-kit >= 0.5
     , bytestring
     , transformers
+    , mtl
+    , hint
     , hspec >= 2
     , QuickCheck
     , http-conduit
@@ -73,6 +71,7 @@ test-suite spec
     , mockery
   other-modules:
       Helper
+      InterpreterSpec
       OptionsSpec
       ReserveSpec
       UtilSpec
