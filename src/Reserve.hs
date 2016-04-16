@@ -3,8 +3,9 @@ module Reserve (run) where
 
 import           Prelude.Compat
 
-import           Control.Monad
 import           Control.Exception
+import           Control.Monad
+import           Control.Monad.IO.Class
 import           GHC.IO.Exception
 import           System.IO
 
@@ -12,37 +13,38 @@ import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import           Network
 
-import           Network.HTTP.Types
 import           Network.HTTP.Toolkit
+import           Network.HTTP.Types
 
-import           Util
+import           Interpreter
 import           Options
-import           Interpreter (Interpreter)
-import qualified Interpreter
+import           Util
 
-data Session = Session Socket Interpreter
+data Session = Session Socket
 
 openSession :: Options -> IO Session
--- openSession opts = Session <$> listenOn (optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
-openSession opts = Session <$> listenOn (PortNumber $ optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
+openSession opts = Session <$> listenOn (PortNumber $ optionsReservePort opts)
 
 closeSession :: Session -> IO ()
-closeSession (Session h i) = sClose h >> Interpreter.terminate i
+closeSession (Session h) = sClose h
 
-withSession :: Options -> (Session -> IO a) -> IO a
-withSession opts = bracket (openSession opts) closeSession
+withSession :: Options -> (Session -> Interpreter.InterpreterM a) -> IO a
+withSession opts action =
+  bracket (openSession opts) closeSession $ \ session ->
+    withInterpreter (optionsMainIs opts) $
+      action session
 
 run :: Options -> IO ()
-run opts = withSession opts $ \(Session s interpreter) -> forever $ do
-  (h, _, _) <- accept s
-  Interpreter.reload interpreter
-  Interpreter.start interpreter (optionsAppArgs opts)
-  c <- inputStreamFromHandle h
+run opts = withSession opts $ \(Session s) -> forever $ do
+  (h, _, _) <- liftIO $ accept s
+  Interpreter.reload
+  Interpreter.start (optionsAppArgs opts)
+  c <- liftIO $ inputStreamFromHandle h
   let send :: ByteString -> IO ()
       send = ignoreResourceVanished . B.hPutStr h
-  readRequest True c >>= httpRequest (optionsPort opts) send
-  Interpreter.stop interpreter
-  ignoreResourceVanished $ hClose h
+  liftIO $ readRequest True c >>= httpRequest (optionsPort opts) send
+  Interpreter.stop
+  liftIO $ ignoreResourceVanished $ hClose h
 
 ignoreResourceVanished :: IO () -> IO ()
 ignoreResourceVanished action = catchJust (guard . (== ResourceVanished) . ioe_type) action return

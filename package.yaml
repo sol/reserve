@@ -16,13 +16,13 @@ default-extensions: NoImplicitPrelude
 dependencies:
   - base == 4.*
   - base-compat >= 0.6.0
-  - directory
   - network
-  - unix
-  - process
   - http-types
   - http-kit >= 0.5
   - bytestring
+  - transformers
+  - mtl
+  - hint
 
 executables:
   reserve:
