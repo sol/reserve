@@ -24,19 +24,24 @@ dependencies:
   - http-kit >= 0.5
   - bytestring
 
+library:
+  source-dirs:
+    - lib
+
 executables:
   reserve:
     main: Main.hs
     source-dirs:
       - driver
-      - src
+    dependencies:
+      - reserve
 
 tests:
   spec:
     main: Spec.hs
     source-dirs:
       - test
-      - src
+      - lib
     dependencies:
       - hspec >= 2
       - QuickCheck
