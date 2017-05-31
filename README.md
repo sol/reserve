@@ -17,7 +17,7 @@ is that your application works with `ghci`.
 
 Create a file `app.hs` with the following content:
 
-~~~ {.haskell}
+```haskell
 {-# LANGUAGE OverloadedStrings #-}
 import Web.Scotty
 
@@ -25,7 +25,7 @@ main :: IO ()
 main = scotty 3000 $ do
   get "/" $ do
     text "hello\n"
-~~~
+```
 
 ```
 $ reserve app.hs
