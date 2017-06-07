@@ -43,26 +43,30 @@ withServer action = inTempDirectory $ do
   bracket (runReserve mvar) killThread (const $ yield >> action)
   takeMVar mvar
   where
-    runReserve mvar = forkIO $ run defaultOptions {optionsMainIs = "app.hs"} `finally` putMVar mvar ()
+    runReserve mvar = forkIO $ run options `finally` putMVar mvar ()
+    options = defaultOptions {
+      optionsMainIs = "app.hs",
+      optionsReservePort = 12001
+    }
 
 spec :: Spec
 spec = around_ withServer $ do
   describe "run" $ do
     it "runs app" $ do
-      simpleHttp "http://localhost:12000/" `shouldReturn` "hello"
+      simpleHttp "http://localhost:12001/" `shouldReturn` "hello"
 
     it "reloads app" $ do
-      simpleHttp "http://localhost:12000/" `shouldReturn` "hello"
+      simpleHttp "http://localhost:12001/" `shouldReturn` "hello"
       appWithResponse (literal "foo")
-      simpleHttp "http://localhost:12000/" `shouldReturn` "foo"
+      simpleHttp "http://localhost:12001/" `shouldReturn` "foo"
 
     it "can deal with large response bodies" $ do
       appWithResponse [i|(B.take 100000 $ B.cycle #{literal "foo bar baz\n"})|]
-      simpleHttp "http://localhost:12000/large-response" `shouldReturn` (L.take 100000 $ L.cycle "foo bar baz\n")
+      simpleHttp "http://localhost:12001/large-response" `shouldReturn` (L.take 100000 $ L.cycle "foo bar baz\n")
 
     context "when client closes connection early" $ do
       it "ignores that client" $ do
-        h <- connectTo "localhost" (PortNumber 12000)
+        h <- connectTo "localhost" (PortNumber 12001)
         hPutStr h "GET / HTTP/1.1\r\n\r\n"
         hClose h
-        simpleHttp "http://localhost:12000/" `shouldReturn` "hello"
+        simpleHttp "http://localhost:12001/" `shouldReturn` "hello"
