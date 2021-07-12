@@ -1,12 +1,13 @@
+{-# LANGUAGE OverloadedStrings #-}
 module UtilSpec (main, spec) where
-
-import           Prelude.Compat
 
 import           Test.Hspec
 import           System.IO
 import           Control.Exception
 import           Control.Concurrent
-import           Network
+import           Network.Socket
+import           Network.Socket.ByteString (sendAll)
+import           Data.Streaming.Network (bindPortTCP)
 
 import           Util
 
@@ -14,10 +15,10 @@ main :: IO ()
 main = hspec spec
 
 startTestServer :: IO ()
-startTestServer = bracket (listenOn $ PortNumber 6060) sClose $ \s -> do
-  (h, _, _) <- accept s
-  hPutStr h "foo"
-  hClose h
+startTestServer = bracket (bindPortTCP 6060 "*") close $ \s -> do
+  (sock, _) <- accept s
+  sendAll sock "foo"
+  close sock
 
 withTestServer :: Int -> IO a -> IO a
 withTestServer delay = bracket (forkIO $ threadDelay delay >> startTestServer) killThread . const

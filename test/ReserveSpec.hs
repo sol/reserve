@@ -1,15 +1,14 @@
 {-# LANGUAGE OverloadedStrings, QuasiQuotes #-}
 module ReserveSpec (spec) where
 
-import           Prelude.Compat
-
 import           Helper
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import           Control.Exception
 import           Control.Concurrent
-import           System.IO
-import           Network
+import           Network.Socket
+import           Network.Socket.ByteString (sendAll)
+import           Data.Streaming.Network (getSocketTCP)
 import           Network.HTTP.Conduit
 import           Data.String.Interpolate
 
@@ -62,7 +61,7 @@ spec = around_ withServer $ do
 
     context "when client closes connection early" $ do
       it "ignores that client" $ do
-        h <- connectTo "localhost" (PortNumber 12000)
-        hPutStr h "GET / HTTP/1.1\r\n\r\n"
-        hClose h
+        (sock, _) <- getSocketTCP "localhost" 12000
+        sendAll sock "GET / HTTP/1.1\r\n\r\n"
+        close sock
         simpleHttp "http://localhost:12000/" `shouldReturn` "hello"

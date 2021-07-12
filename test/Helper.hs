@@ -6,5 +6,4 @@ module Helper (
 
 import           Test.Hspec
 import           Test.Mockery.Directory
-import           Prelude.Compat
 import           Control.Applicative

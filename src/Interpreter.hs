@@ -8,8 +8,6 @@ module Interpreter (
 , reload
 ) where
 
-import           Prelude.Compat
-
 import           System.Process
 import           System.Process.Internals
 import           System.IO
@@ -37,7 +35,9 @@ reload :: Interpreter -> IO ()
 reload (Interpreter _ h) = hPutStrLn h ":reload" >> hFlush h
 
 signalProcess :: Signal -> ProcessHandle -> IO ()
-#if MIN_VERSION_process(1,2,0)
+#if MIN_VERSION_process(1,6,0)
+signalProcess signal (ProcessHandle mvar _ _) =
+#elif MIN_VERSION_process(1,2,0)
 signalProcess signal (ProcessHandle mvar _) =
 #else
 signalProcess signal (ProcessHandle mvar) =

@@ -1,8 +1,6 @@
 module Main (main) where
 
-import           Prelude.Compat
-
-import           Network
+import           Network.Socket
 
 import           Options
 import           Reserve

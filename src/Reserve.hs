@@ -1,7 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE LambdaCase #-}
 module Reserve (run) where
-
-import           Prelude.Compat
 
 import           Control.Monad
 import           Control.Exception
@@ -10,7 +9,8 @@ import           System.IO
 
 import           Data.ByteString (ByteString)
 import qualified Data.ByteString as B
-import           Network
+import           Network.Socket
+import           Data.Streaming.Network (bindPortTCP)
 
 import           Network.HTTP.Types
 import           Network.HTTP.Toolkit
@@ -23,20 +23,20 @@ import qualified Interpreter
 data Session = Session Socket Interpreter
 
 openSession :: Options -> IO Session
--- openSession opts = Session <$> listenOn (optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
-openSession opts = Session <$> listenOn (PortNumber $ optionsReservePort opts) <*> Interpreter.new (optionsMainIs opts)
+openSession opts = Session <$> bindPortTCP (optionsReservePort opts) "*" <*> Interpreter.new (optionsMainIs opts)
 
 closeSession :: Session -> IO ()
-closeSession (Session h i) = sClose h >> Interpreter.terminate i
+closeSession (Session h i) = close h >> Interpreter.terminate i
 
 withSession :: Options -> (Session -> IO a) -> IO a
 withSession opts = bracket (openSession opts) closeSession
 
 run :: Options -> IO ()
 run opts = withSession opts $ \(Session s interpreter) -> forever $ do
-  (h, _, _) <- accept s
+  (sock, _) <- accept s
   Interpreter.reload interpreter
   Interpreter.start interpreter (optionsAppArgs opts)
+  h <- socketToHandle sock ReadWriteMode
   c <- inputStreamFromHandle h
   let send :: ByteString -> IO ()
       send = ignoreResourceVanished . B.hPutStr h
@@ -52,8 +52,8 @@ gatewayTimeout send = simpleResponse send gatewayTimeout504 headers "timeout"
   where
     headers = [("Content-Type", "text/plain"), ("Connection", "close")]
 
-httpRequest :: PortNumber -> (ByteString -> IO ()) -> Request BodyReader -> IO ()
-httpRequest port send request@(Request method _ headers _) = connectRetry 200000 "localhost" port $ \mh -> case mh of
+httpRequest :: Port -> (ByteString -> IO ()) -> Request BodyReader -> IO ()
+httpRequest port send request@(Request method _ headers _) = connectRetry 200000 "localhost" port $ \ case
   Just h -> do
     sendRequest (B.hPutStr h) request{requestHeaders = setConnectionClose headers}
     inputStreamFromHandle h >>= readResponse True method >>= sendResponse send

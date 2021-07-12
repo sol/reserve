@@ -1,9 +1,11 @@
--- This file has been generated from package.yaml by hpack.
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 
 name:             reserve
-version:          0.1.1
+version:          0.1.2
 bug-reports:      https://github.com/sol/reserve/issues
 license:          MIT
 license-file:     LICENSE
@@ -13,38 +15,42 @@ maintainer:       Simon Hengel <sol@typeful.net>
 synopsis:         Reserve reloads web applications
 description:      Universal and robust reloading for Haskell web applications
 category:         Web
+homepage:         https://github.com/sol/reserve#readme
 build-type:       Simple
-cabal-version:    >= 1.10
 
 source-repository head
   type: git
   location: https://github.com/sol/reserve
 
 executable reserve
-  hs-source-dirs: driver, src
+  hs-source-dirs:
+      driver
+      src
   main-is: Main.hs
   other-modules:
       Interpreter
       Options
       Reserve
       Util
+      Paths_reserve
   build-depends:
-      base == 4.*
-    , base-compat >= 0.6.0
-    , directory
-    , network
-    , unix
-    , process
-    , http-types
-    , http-kit >= 0.5
+      base ==4.*
     , bytestring
-  default-extensions: NoImplicitPrelude
+    , directory
+    , http-kit >=0.5
+    , http-types
+    , network
+    , process
+    , streaming-commons
+    , unix
   ghc-options: -Wall
   default-language: Haskell2010
 
 test-suite spec
   type: exitcode-stdio-1.0
-  hs-source-dirs: test, src
+  hs-source-dirs:
+      test
+      src
   main-is: Spec.hs
   other-modules:
       Helper
@@ -55,23 +61,22 @@ test-suite spec
       Options
       Reserve
       Util
+      Paths_reserve
   build-depends:
-      base == 4.*
-    , base-compat >= 0.6.0
-    , directory
-    , network
-    , unix
-    , process
-    , http-types
-    , http-kit >= 0.5
+      QuickCheck
+    , base ==4.*
     , bytestring
-
-    , hspec >= 2
-    , QuickCheck
+    , directory
+    , hspec >=2
     , http-conduit
-    , warp >= 3
+    , http-kit >=0.5
+    , http-types
     , interpolate
     , mockery
-  default-extensions: NoImplicitPrelude
+    , network
+    , process
+    , streaming-commons
+    , unix
+    , warp >=3
   ghc-options: -Wall
   default-language: Haskell2010

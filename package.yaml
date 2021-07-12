@@ -1,4 +1,5 @@
-version: 0.1.1
+name: reserve
+version: 0.1.2
 license: MIT
 category: Web
 copyright:  (c) 2014, 2015 Simon Hengel
@@ -11,11 +12,8 @@ github: sol/reserve
 
 ghc-options: -Wall
 
-default-extensions: NoImplicitPrelude
-
 dependencies:
   - base == 4.*
-  - base-compat >= 0.6.0
   - directory
   - network
   - unix
@@ -23,6 +21,7 @@ dependencies:
   - http-types
   - http-kit >= 0.5
   - bytestring
+  - streaming-commons
 
 executables:
   reserve:

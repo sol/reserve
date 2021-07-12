@@ -1,5 +1,6 @@
 module Options (
   Options (..)
+, Port
 , withOptions
 , parseOptions
 , defaultOptions
@@ -8,17 +9,13 @@ module Options (
 , Arg (..)
 ) where
 
-import           Prelude.Compat
-
 import           Data.Maybe
 import           Data.List
-import           Text.Read.Compat
+import           Text.Read
 import           System.Console.GetOpt
 import           System.Environment
 import           System.IO
 import           System.Exit
-
-import           Network (PortNumber)
 
 withOptions :: (Options -> IO ()) -> IO ()
 withOptions action = do
@@ -32,9 +29,11 @@ exitWithMessage err msg = case err of
   ExitSuccess -> hPutStr stdout msg
   _           -> hPutStr stderr msg >> exitWith err
 
+type Port = Int
+
 data Options = Options {
-  optionsPort :: PortNumber
-, optionsReservePort :: PortNumber
+  optionsPort :: Port
+, optionsReservePort :: Port
 , optionsMainIs :: FilePath
 , optionsAppArgs :: [String]
 } deriving (Eq, Show)
